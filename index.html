@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omi Menu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fbf6e9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-width: 80px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        .slogan {
+            font-family: 'Arial', sans-serif;
+            font-size: 30px;
+            color: #333;
+            margin-bottom: 20px;
+            direction: rtl;
+        }
+
+        .filter-section {
+            position: relative;
+            margin-bottom: 30px;
+            padding: 0 40px;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            padding: 5px 0;
+        }
+
+        .filter-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .scroll-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .scroll-btn:hover {
+            background: #444;
+        }
+
+        .scroll-btn.left {
+            left: 0;
+        }
+
+        .scroll-btn.right {
+            right: 0;
+        }
+
+        .filter-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 14px;
+            background-color: #fbf6e9;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            white-space: nowrap; /* keep name on a single line */
+            text-align: center;
+            color: #000;
+            gap: 8px;
+            width: auto; /* size to content */
+            min-width: 120px; /* ensure enough room for icon/text */
+            box-sizing: border-box;
+            min-height: 120px;
+        }
+
+        .filter-btn .category-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+
+        .filter-btn:hover, .filter-btn.active, .filter-btn:focus {
+            /* remove any visual change on hover/active/focus */
+            background-color: #fbf6e9;
+            color: #000;
+            border: none;
+            box-shadow: none;
+            transform: none;
+            outline: none;
+        }
+
+        .menu-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .menu-section h2 {
+            color: #333;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+
+        /* Card layout for menu items */
+        .cards {
+            display: grid;
+            /* card width will adapt to the widest category button via --filter-btn-width
+               but never exceed the container width (using min()) so cards don't overflow */
+            grid-template-columns: repeat(auto-fit, minmax(min(var(--filter-btn-width,300px), 100%), 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-height: 280px;
+            height: auto;
+            background: #fff;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.04);
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #f0f0f0;
+        }
+
+        .card .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card .name {
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 4px;
+            font-size: 1.1em;
+            order: 1;
+        }
+
+        .card .desc {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            order: 2;
+        }
+
+        .card .meta {
+            margin-top: auto;
+            order: 3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card .price {
+            color: #222;
+            font-weight: 700;
+            white-space: nowrap;
+            align-self: flex-end;
+            font-size: 1.05em;
+        }
+
+        /* Meta row that sits below the product name and contains the 'Prix' label and the price */
+        .card .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            width: 100%;
+        }
+
+        .card .prix-label {
+            color: #222;
+            font-weight: 700;
+            font-size: 1.05em;
+        }
+
+        .description {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .menu-item {
+                flex-direction: column;
+            }
+            .dots {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="images/Menu (2).png" alt="Omi Menu Logo" class="logo">
+            <div class="slogan">قعيدة عسل عند أمي</div>
+        </div>
+        
+        <div class="filter-section">
+            <button class="scroll-btn left" aria-label="Scroll left">←</button>
+            <div class="filter-container">
+                <button class="filter-btn active" data-category="all"><img src="images/all.png" alt="" class="category-icon">All</button>
+                <button class="filter-btn" data-category="nharna"><img src="images/nharna degla.png" alt="Nharna icon" class="category-icon">Nharna degla w 3sal</button>
+            <button class="filter-btn" data-category="7alli"><img src="images/7alli.png" alt="7alli icon" class="category-icon">7alli bach twalli</button>
+            <button class="filter-btn" data-category="lelli"><img src="images/lelli.png" alt="Lelli icon" class="category-icon">Lelli y7eb l7ar</button>
+            <button class="filter-btn" data-category="kwayes"><img src="images/kwayes jus.png" alt="Kwayes icon" class="category-icon">Kwayes jus 3attayer</button>
+            <button class="filter-btn" data-category="petit-dejeuner"><img src="images/ptitdej.png" alt="Petit Déjeuner icon" class="category-icon">Petit Déjeuner</button>
+            <button class="filter-btn" data-category="cafes"><img src="images/nos café.png" alt="Cafés icon" class="category-icon">Nos Cafés</button>
+            <button class="filter-btn" data-category="nespresso"><img src="images/nespresso cof.png" alt="Nespresso icon" class="category-icon">Nos Cafés Nespresso</button>
+            <button class="filter-btn" data-category="aromatise"><img src="images/café aromatisé.png" alt="Aromatisé icon" class="category-icon">Cafés Aromatisé</button>
+            <button class="filter-btn" data-category="iced-coffee"><img src="images/iced coffee.png" alt="Iced Coffee icon" class="category-icon">Iced Coffee</button>
+            <button class="filter-btn" data-category="the"><img src="images/nos thé.png" alt="Thé icon" class="category-icon">Nos Thé</button>
+            <button class="filter-btn" data-category="iced-the"><img src="images/iced tea.png" alt="Iced Thé icon" class="category-icon">Iced Thé</button>
+            <button class="filter-btn" data-category="jus"><img src="images/nos jus.png" alt="Jus icon" class="category-icon">Nos Jus</button>
+            <button class="filter-btn" data-category="cocktails"><img src="images/coctails.png" alt="Cocktails icon" class="category-icon">Nos Cocktails</button>
+            <button class="filter-btn" data-category="mousses"><img src="images/nos mosse.png" alt="Mousses icon" class="category-icon">Nos Mousses</button>
+            <button class="filter-btn" data-category="jwejem"><img src="images/nos jwajem.png" alt="Jwejem icon" class="category-icon">Jwejem</button>
+            <button class="filter-btn" data-category="smoothies"><img src="images/nos smoothie.png" alt="Smoothies icon" class="category-icon">Nos Smoothies</button>
+            <button class="filter-btn" data-category="mojitos"><img src="images/nos mojito.png" alt="Mojitos icon" class="category-icon">Nos Mojitos</button>
+            <button class="filter-btn" data-category="gaufres"><img src="images/nos gaufres.png" alt="Gaufres icon" class="category-icon">Nos Gaufres</button>
+            <button class="filter-btn" data-category="pains"><img src="images/nos panecake.png" alt="Pains Cake icon" class="category-icon">Nos Panecake Cake</button>
+            <button class="filter-btn" data-category="crepes-sucrees"><img src="images/nos crepe.png" alt="Crêpes Sucrées icon" class="category-icon">Nos Crêpes Sucrées</button>
+            <button class="filter-btn" data-category="crepes-salees"><img src="images/nos crepe salé.png" alt="Crêpes Salées icon" class="category-icon">Nos Crêpes Salées</button>
+            <button class="filter-btn" data-category="omelettes"><img src="images/nos omlette.png" alt="Omelettes icon" class="category-icon">Nos Omelettes</button>
+            <button class="filter-btn" data-category="panini"><img src="images/nos panini.png" alt="Panini icon" class="category-icon">Panini</button>
+            <button class="filter-btn" data-category="boissons"><img src="images/boissson.png" alt="Boissons icon" class="category-icon">Boissons Froides</button>
+            <button class="filter-btn" data-category="9ayda"><img src="images/93ayda asal.png" alt="9ayda icon" class="category-icon">93ayda 3ssal</button>
+            <button class="filter-btn" data-category="chicha"><img src="images/chiiiicha.png" alt="Chicha icon" class="category-icon">Chicha</button>
+            </div>
+            <button class="scroll-btn right" aria-label="Scroll right">→</button>
+        </div>
+
+        <!-- Each section now contains a .cards grid; each product is a .card with an image placeholder -->
+
+        <section class="menu-section" data-category="nharna">
+            <h2>Nharna degla w 3sal</h2>
+            <div class="cards">
+                <div class="card"><img src="images/sanhlou.jpeg" alt="Sandwich 7louw"><div class="content"><div class="name">Sandwich 7louw</div><div class="desc"></div></div><div class="price">2dt</div></div>
+                <div class="card"><img src="images/lban.png" alt="Kas 7lib ou lBen"><div class="content"><div class="name">Kes 7lib wele lBen</div><div class="desc"></div></div><div class="price">1.5dt</div></div>
+                <div class="card"><img src="images/banbalouyni2.jpg" alt="K3iba banbalouni 3lech la"><div class="content"><div class="name">K3iba bambalouni 3lech la</div><div class="desc"></div></div><div class="price">1.5dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="7alli">
+            <h2>7alli bech twalli</h2>
+            <div class="cards">
+                <div class="card"><img src="images/baryouch.png" alt="Croissant"><div class="content"><div class="name">Croissant</div><div class="desc"></div></div><div class="price">2dt</div></div>
+                <div class="card"><img src="images/croissant spéciale.jpg" alt="Croissant tayer"><div class="content"><div class="name">Croissant tayer</div><div class="desc"></div></div><div class="price">2.5dt</div></div>
+                <div class="card"><img src="images/cake.jpg" alt="Cake"><div class="content"><div class="name">Cake</div><div class="desc"></div></div><div class="price">2dt</div></div>
+                <div class="card"><img src="images/milefeuille.png" alt="Mille feuille"><div class="content"><div class="name">Mille feuille</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                <div class="card"><img src="images/tarte.png" alt="Tarte amande"><div class="content"><div class="name">Tarte amande</div><div class="desc"></div></div><div class="price">3dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="lelli">
+            <h2>Lelli y7eb l7ar</h2>
+            <div class="cards">
+                <div class="card"><img src="images/sand thon.jpeg" alt="Sandwich thon (baguette ou mbasses)"><div class="content"><div class="name">Sandwich thon (baguette ou mbasses)</div><div class="desc"></div></div><div class="price">2.5dt</div></div>
+                <div class="card"><img src="images/mlewi2.png" alt="Mlawi"><div class="content"><div class="name">Mlewi</div><div class="desc"></div></div><div class="price">2.5dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="kwayes">
+            <h2>Kwayes jus 3attayer</h2>
+            <div class="cards">
+                <div class="card"><img src="images/fraise.png" alt="Fraise"><div class="content"><div class="name">Fraise</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                <div class="card"><img src="images/citronade2.png" alt="Citronade"><div class="content"><div class="name">Citronade</div><div class="desc"></div></div><div class="price">2dt</div></div>
+                <div class="card"><img src="images/jus mangue.png" alt="Mangue"><div class="content"><div class="name">Mangue</div><div class="desc"></div></div><div class="price">2dt</div></div>
+                <div class="card"><img src="images/rozata.png" alt="Rozata"><div class="content"><div class="name">Rozata</div><div class="desc"></div></div><div class="price">2dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="petit-dejeuner">
+            <h2>Petit Déjeuner</h2>
+            <div class="cards">
+                <div class="card"><img src="images/petitdej1.png" alt="Tic Tac"><div class="content"><div class="name">Tic Tac</div><div class="desc">Café au choix, jus frais, croissant ou cake, eau 0.5L.</div></div><div class="price">6.5dt</div></div>
+                <div class="card"><img src="images/cont.jpg" alt="Continental"><div class="content"><div class="name">Continental</div><div class="desc">Café au choix, jus frais, yaourt, viennoiseries, charcuterie, crêpe ou omelette, pain, beurre, chamia, miel, eau 0.5L.</div></div><div class="price">14dt</div></div>
+                <div class="card"><img src="images/continiale.jpg" alt="Brunch"><div class="content"><div class="name">Brunch</div><div class="desc">2 cafés, 2 jus frais, corbeille de pain, salade de fruits, charcuterie, viennoiseries, 2 crêpes ou 2 omelettes, eau 1L, yaourt, miel, chamia, fromage, beurre.</div></div><div class="price">29dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="cafes">
+            <h2>Nos Cafés</h2>
+            <div class="cards">
+                <div class="card"><img src="images/filtre.png" alt="Filtre"><div class="content"><div class="name">Filtre</div><div class="desc"></div></div><div class="price">2dt</div></div>
+                <div class="card"><img src="images/espresso.png" alt="Express "><div class="content"><div class="name">Express </div><div class="desc"></div></div><div class="price">2.3dt</div></div>
+                <div class="card"><img src="images/americano.png" alt="Américain"><div class="content"><div class="name">Américain</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                <div class="card"><img src="images/cappucin.png" alt="Cappucin"><div class="content"><div class="name">Cappucin</div><div class="desc"></div></div><div class="price">2.5dt</div></div>
+                <div class="card"><img src="images/carfé creme.png" alt="Café crème"><div class="content"><div class="name">Café crème</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                <div class="card"><img src="images/machiato.png" alt="Machiatto"><div class="content"><div class="name">Machiatto</div><div class="desc"></div></div><div class="price">3.5dt</div></div>
+                <div class="card"><img src="images/cappucino.png" alt="Cappuccino"><div class="content"><div class="name">Cappuccino</div><div class="desc"></div></div><div class="price">5dt</div></div>
+                <div class="card"><img src="images/café turc.png" alt="Café turc"><div class="content"><div class="name">Café turc</div><div class="desc"></div></div><div class="price">3.5dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="nespresso">
+            <h2>Nos Cafés Nespresso</h2>
+            <div class="cards">
+                <div class="card"><img src="images/nespresso.png" alt="Nespresso"><div class="content"><div class="name">Nespresso</div><div class="desc"></div></div><div class="price">3.5dt</div></div>
+                <div class="card"><img src="images/Nespresso Américain.png" alt="Nespresso américain"><div class="content"><div class="name">Nespresso américain</div><div class="desc"></div></div><div class="price">3.5dt</div></div>
+                <div class="card"><img src="images/Capucin Nespresso.png" alt="Cappucin Nespresso"><div class="content"><div class="name">Cappucin nespresso</div><div class="desc"></div></div><div class="price">4dt</div></div>
+                <div class="card"><img src="images/cremeNespresso.png" alt="Crème Nespresso"><div class="content"><div class="name">Crème nespresso</div><div class="desc"></div></div><div class="price">4.5dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="aromatise">
+            <h2>Nos Cafés Aromatisé</h2>
+            <div class="cards">
+                <div class="card"><img src="images/expresse aromatisé.png" alt="Express"><div class="content"><div class="name">Express</div><div class="desc"></div></div><div class="price">2.5dt</div></div>
+                <div class="card"><img src="images/café americano aromatisé.png" alt="Américain"><div class="content"><div class="name">Américain</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                <div class="card"><img src="images/café cappucin  aromatisé.png" alt="Cappucin"><div class="content"><div class="name">Cappucin</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                <div class="card"><img src="images/café créme  aromatisé.png" alt="Café Crème"><div class="content"><div class="name"> Café crème</div><div class="desc"></div></div><div class="price">3.5dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="iced-coffee">
+            <h2>Iced Coffee</h2>
+            <div class="cards">
+                <div class="card"><img src="images/iced coffee classique.png" alt="Iced Coffee classique"><div class="content"><div class="name">Iced Coffee classique</div><div class="desc"></div></div><div class="price">3.5dt</div></div>
+                <div class="card"><img src="images/iced coffee caramel.png" alt="Iced Coffee Caramel"><div class="content"><div class="name">Iced Coffee Caramel</div><div class="desc"></div></div><div class="price">5dt</div></div>
+                <div class="card"><img src="images/iced coffee noisette.png" alt="Iced Coffee Noisette"><div class="content"><div class="name">Iced Coffee Noisette</div><div class="desc"></div></div><div class="price">5dt</div></div>
+                <div class="card"><img src="images/iced coffee vanille.png" alt="Iced Coffee vanille"><div class="content"><div class="name">Iced Coffee Vanille</div><div class="desc"></div></div><div class="price">5dt</div></div>
+                <div class="card"><img src="images/iced coffee nutella.png" alt="Iced Coffee Nutella"><div class="content"><div class="name">Iced Coffee Nutella</div><div class="desc"></div></div><div class="price">5.5dt</div></div>
+                <div class="card"><img src="images/iced coffee morjene.png" alt="Iced Coffee Morjene"><div class="content"><div class="name">Iced Coffee Morjene</div><div class="desc"></div></div><div class="price">5.5dt</div></div>
+                <div class="card"><img src="images/iced machiatto aromatisé.png" alt="Iced Machiatto Aromatisé"><div class="content"><div class="name">Iced Machiatto Aromatisé</div><div class="desc"></div></div><div class="price">5.5dt</div></div>
+            </div>
+            </div>
+            </div>
+            </div>
+            </div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="the">
+            <h2>Nos Thés</h2>
+            <div class="cards">
+                <div class="card"><img src="images/thé aux menthe.png" alt="Thé aux menthe"><div class="content"><div class="name">Thé à la menthe</div><div class="desc"></div></div><div class="price">2dt</div></div>
+                <div class="card"><img src="images/thé aux amande.png" alt="Thé aux amandes"><div class="content"><div class="name">Thé aux amandes</div><div class="desc"></div></div><div class="price">4dt</div></div>
+                 <div class="card"><img src="" alt="Thé Kaida assal"><div class="content"><div class="name">Thé 93ayda 3sal</div><div class="desc"></div></div><div class="price">6dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="iced-the">
+            <h2>Iced Tea</h2>
+            <div class="cards">
+                <div class="card"><img src="images/iced tea menthe glacé.png" alt="Iced tea menthe glacé"><div class="content"><div class="name">Iced tea menthe glacé</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                 <div class="card"><img src="images/iced tea peche.png" alt="Iced tea  pêche"><div class="content"><div class="name">Iced tea pêche</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                 <div class="card"><img src="images/iced tea  jasmin peche.png" alt="Iced tea jasmin pêche"><div class="content"><div class="name">Iced tea jasmin pêche</div><div class="desc"></div></div><div class="price">3.5dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="jus">
+            <h2>Nos Jus</h2>
+            <div class="cards">
+                <div class="card"><img src="images/jus d'orange.png" alt="Jus d’orange"><div class="content"><div class="name">Jus d’orange</div><div class="desc"></div></div><div class="price">3.5dt</div></div>
+                <div class="card"><img src="images/jus fraise.png" alt="Jus citron"><div class="content"><div class="name">Jus citron</div><div class="desc"></div></div><div class="price">4dt</div></div>
+                 <div class="card"><img src="images/jus fraise.png" alt="Jus de fraise"><div class="content"><div class="name">Jus de fraise </div><div class="desc"></div></div><div class="price">6dt</div></div>
+                  <div class="card"><img src="images/jus banane.png" alt="Jus banane"><div class="content"><div class="name">Jus banane</div><div class="desc"></div></div><div class="price">6dt</div></div>
+                   <div class="card"><img src="images/jus banane datte miel.png" alt="Jus banane datte miel"><div class="content"><div class="name">Jus banane datte miel </div><div class="desc"></div></div><div class="price">7dt</div></div>
+                    <div class="card"><img src="images/jus fruit.png" alt="Jus fruit"><div class="content"><div class="name">Jus fruit</div><div class="desc"></div></div><div class="price">7dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="cocktails">
+            <h2>Nos Cocktails</h2>
+            <div class="cards">
+                <div class="card"><img src="images/cocktail banane kiwi.png" alt="Cocktail banane kiwi"><div class="content"><div class="name">Cocktail banane kiwi</div><div class="desc"></div></div><div class="price">6dt</div></div>
+                <div class="card"><img src="images/cocktail banane fraise.png" alt="Cocktails banane fraise"><div class="content"><div class="name">Cocktails banane fraise</div><div class="desc"></div></div><div class="price">6dt</div></div>
+                <div class="card"><img src="images/cocktail  kaida asal.png" alt="Cocktail kaiida assel"><div class="content"><div class="name">Cocktail kaiida assel</div><div class="desc"></div></div><div class="price">7dt</div></div>
+                <div class="card"><img src="images/cocktail strawbery bleu.png" alt="Cocktail strawbery bleu"><div class="content"><div class="name">Cocktail strawbery bleu</div><div class="desc"></div></div><div class="price">7dt</div></div>
+                <div class="card"><img src="images/coktail  pina colada.png" alt="Cocktail pina colada"><div class="content"><div class="name">Cocktail pina colada</div><div class="desc"></div></div><div class="price">8dt</div></div>
+                <div class="card"><img src="images/coktail  mangue fragula.png" alt="Cocktail mangue fragula"><div class="content"><div class="name">Cocktail mangue fragula</div><div class="desc"></div></div><div class="price">9dt</div></div>
+                <div class="card"><img src="images/coktail  grenadine.png" alt="Cocktail grenadine"><div class="content"><div class="name">Cocktail grenadine</div><div class="desc"></div></div><div class="price">7dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="mousses">
+            <h2>Nos Mousses</h2>
+            <div class="cards">
+                <div class="card"><img src="images/mousse chocalt vanille.png" alt="Mousse chocolat vanille"><div class="content"><div class="name">Mousse chocolat vanille</div><div class="desc"></div></div><div class="price">6.5dt</div></div>
+                <div class="card"><img src="images/mousse oreo.png" alt="Mousse oreo nutella"><div class="content"><div class="name">Mousse oreo nutella</div><div class="desc"></div></div><div class="price">7dt</div></div>
+                <div class="card"><img src="images/mousse caramel.png" alt="crunch caramel"><div class="content"><div class="name">Mousse caramel</div><div class="desc"></div></div><div class="price">7.5dt</div></div>
+                <div class="card"><img src="images/Cheesecake en verrine.png" alt="cheesecake en verrine"><div class="content"><div class="name">Cheesecake en verrine</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                <div class="card"><img src="images/Tiramisu.png" alt="Tiramisu"><div class="content"><div class="name">Tiramisu</div><div class="desc"></div></div><div class="price">5dt</div></div>
+                <div class="card"><img src="images/Cheesecake aux choix.png" alt="Cheesecake aux choix"><div class="content"><div class="name">Cheesecake au choix</div><div class="desc">Nutella, Oreo, spéculos.</div></div><div class="price">8t</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="jwejem">
+            <h2>Jwejem</h2>
+            <div class="cards">
+                <div class="card"><img src="images/jwajem.jpg" alt="Jwejem"><div class="content"><div class="name">Big jwajem</div><div class="desc"></div></div><div class="price">15dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="smoothies">
+            <h2>Nos Smoothies</h2>
+            <div class="cards">
+                <div class="card"><img src="images/Smoothie mangue ananas.png" alt="Smoothie mangue ananas"><div class="content"><div class="name">Smoothie mangue ananas</div><div class="desc"></div></div><div class="price">11dt</div></div>
+                <div class="card"><img src="images/Smoothies pina colada.png" alt="Smoothies pina colada"><div class="content"><div class="name">Smoothies pina colada</div><div class="desc"></div></div><div class="price">11dt</div></div>
+                <div class="card"><img src="images/smoothie strawberrie.png" alt="Smoothies strawbery"><div class="content"><div class="name">Smoothies strawbery</div><div class="desc"></div></div><div class="price">10dt</div></div>
+                <div class="card"><img src="images/Smoothies exotique.png" alt="Smoothies exotique"><div class="content"><div class="name">Smoothies exotique</div><div class="desc"></div></div><div class="price">11dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="mojitos">
+            <h2>Nos Mojitos</h2>
+            <div class="cards">
+                <div class="card"><img src="images/Mojito classique.png" alt="Mojito classique"><div class="content"><div class="name">Mojito classique</div><div class="desc"></div></div><div class="price">6dt</div></div>
+                <div class="card"><img src="images/Mojito bleu.png" alt="Mojito bleu"><div class="content"><div class="name">Mojito bleu</div><div class="desc"></div></div><div class="price">7dt</div></div>
+                <div class="card"><img src="images/Mojito pina colada.png" alt="Mojito pina colada"><div class="content"><div class="name">Mojito pina colada</div><div class="desc"></div></div><div class="price">7.5dt</div></div>
+                <div class="card"><img src="images/Mojito mangue bleu.png" alt="Mojito mangue bleu"><div class="content"><div class="name">Mojito mangue bleu</div><div class="desc"></div></div><div class="price">8dt</div></div>
+                <div class="card"><img src="images/Mojito énergétique.png" alt="Mojito énergétique"><div class="content"><div class="name">Mojito énergétique</div><div class="desc"></div></div><div class="price">10.5dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="gaufres">
+            <h2>Nos Gaufres</h2>
+            <div class="cards">
+                <div class="card"><img src="images/Gaufres nutella.png" alt="Gaufres nutella"><div class="content"><div class="name">Gaufres nutella</div><div class="desc"></div></div><div class="price">6.5dt</div></div>
+                <div class="card"><img src="images/Gaufres nutella fruits secs.png" alt="Gaufres nutella fruits secs"><div class="content"><div class="name">Gaufres nutella fruits secs</div><div class="desc"></div></div><div class="price">7dt</div></div>
+                <div class="card"><img src="images/Gaufres kaiida assal.png" alt="Gaufres 93ayda 3sal"><div class="content"><div class="name">Gaufres 93ayda 3sal</div><div class="desc"></div></div><div class="price">7.5dt</div></div>
+            </div>
+            </div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="pains">
+            <h2>Nos Pains Cake</h2>
+            <div class="cards">
+                <div class="card"><img src="images/Pancakes.png" alt="Paecake"><div class="content"><div class="name">Panecake</div><div class="desc"></div></div><div class="price">8dt</div></div>
+                <div class="card"><img src="images/Pancakes kaida asal.png" alt="Pains cake 93ayda 3sal"><div class="content"><div class="name">Panecake 93ayda 3sal</div><div class="desc"></div></div><div class="price">10dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="crepes-sucrees">
+            <h2>Nos Crêpes Sucrées</h2>
+            <div class="cards">
+                <div class="card"><img src="images/Crêpe chocolat.png" alt="Crêpe chocolat"><div class="content"><div class="name">Crêpe chocolat</div><div class="desc"></div></div><div class="price">5dt</div></div>
+                <div class="card"><img src="images/crepe nutlla.png" alt="Crêpe nutella"><div class="content"><div class="name">Crêpe nutella</div><div class="desc"></div></div><div class="price">7.5dt</div></div>
+                <div class="card"><img src="images/Crêpe nutella banane.png" alt="Crêpe nutella banane"><div class="content"><div class="name">Crêpe nutella banane</div><div class="desc"></div></div><div class="price">8.5dt</div></div>
+                <div class="card"><img src="images/Crêpe nutella fruits secs.jpg" alt="Crêpe nutella fruits secs"><div class="content"><div class="name">Crêpe nutella fruits secs</div><div class="desc"></div></div><div class="price">8.5dt</div></div>
+                <div class="card"><img src="images/crepe morjene.png" alt="Crêpe morjene"><div class="content"><div class="name">Crêpe morjene</div><div class="desc"></div></div><div class="price">7.5dt</div></div>
+                <div class="card"><img src="images/crepe moejene banane.png" alt="Crêpe morjene banane"><div class="content"><div class="name">Crêpe morjene banane</div><div class="desc"></div></div><div class="price">8.5dt</div></div>
+                <div class="card"><img src="images/crepe morjene fruit sec.png" alt="Crêpe morjene fruits sec"><div class="content"><div class="name">Crêpe morjene fruits sec</div><div class="desc"></div></div><div class="price">8.5dt</div></div>
+                <div class="card"><img src="images/crepe spéciale.png" alt="Crêpe spécial"><div class="content"><div class="name">Crêpe spécial</div><div class="desc">Nutella, morjene, fruits secs, banane</div></div><div class="price">10dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="crepes-salees">
+            <h2>Nos Crêpes Salées</h2>
+            <div class="cards">
+                <div class="card"><img src="images/Crêpe thon formage.jpg" alt="Crêpe thon fromage"><div class="content"><div class="name">Crêpe thon fromage</div><div class="desc"></div></div><div class="price">6.5dt</div></div>
+                <div class="card"><img src="images/Crêpe jambon fromage.jpg" alt="Crêpe jambon fromage"><div class="content"><div class="name">Crêpe jambon fromage</div><div class="desc"></div></div><div class="price">6.5dt</div></div>
+                <div class="card"><img src="images/Crêpe kaiida assel.jpeg" alt="Crêpe kaiida assel"><div class="content"><div class="name">Crêpe kaiida assel</div><div class="desc"></div></div><div class="price">8dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="omelettes">
+            <h2>Nos Omelettes</h2>
+            <div class="cards">
+                <div class="card"><img src="images/Omelette nature.jpeg" alt="Omelette nature"><div class="content"><div class="name">Omelette nature</div><div class="desc"></div></div><div class="price">5dt</div></div>
+                <div class="card"><img src="images/Omelette thon.jpg" alt="Omelette thon"><div class="content"><div class="name">Omelette thon</div><div class="desc"></div></div><div class="price">6.5dt</div></div>
+                <div class="card"><img src="images/Omelette jambon.jpeg" alt="Omelette jambon"><div class="content"><div class="name">Omelette jambon</div><div class="desc"></div></div><div class="price">6.5dt</div></div>
+                <div class="card"><img src="images/Omelette kaiida assel.jpeg" alt="Omelette kaiida assel"><div class="content"><div class="name">Omelette kaiida assel</div><div class="desc"></div></div><div class="price">7.5dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="panini">
+            <h2>Panini</h2>
+            <div class="cards">
+                <div class="card"><img src="images/Panini fromage.png" alt="Panini"><div class="content"><div class="name">Panini fromage</div><div class="desc"></div></div><div class="price">3dt</div></div>
+                <div class="card"><img src="images/Panini thon.png" alt="Panini thon"><div class="content"><div class="name">Panini thon</div><div class="desc"></div></div><div class="price">4dt</div></div>
+                <div class="card"><img src="images/Panini jonbon.png" alt="Panini jombon"><div class="content"><div class="name">Panini jambon </div><div class="desc"></div></div><div class="price">4dt</div></div>
+                <div class="card"><img src="images/panini spéciale.png" alt="Panini spéciale"><div class="content"><div class="name">Panini spéciale</div><div class="desc">Thon, jambon, fromage</div></div><div class="price">6dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="boissons">
+            <h2>Boissons Froides</h2>
+            <div class="cards">
+                <div class="card"><img src="images/Eau minérale 1L.png" alt="Eau 1L"><div class="content"><div class="name">Eau minérale 1L</div><div class="desc"></div></div><div class="price">1.5dt</div></div>
+                <div class="card"><img src="images/Eau minérale 0.5L.jpeg" alt="Eau 0.5L"><div class="content"><div class="name">Eau minérale 0.5L</div><div class="desc"></div></div><div class="price">1dt</div></div>
+                <div class="card"><img src="images/Canette.jpeg" alt="Canette"><div class="content"><div class="name">Canette</div><div class="desc"></div></div><div class="price">2.5dt</div></div>
+                <div class="card"><img src="images/Shark.jpeg" alt="Shark"><div class="content"><div class="name">Shark</div><div class="desc"></div></div><div class="price">6dt</div></div>
+            
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="9ayda">
+            <h2>93ayda 3ssal</h2>
+            <div class="cards">
+                <div class="card"><img src="images/93ayda 3ssal.png" alt="4 pièces"><div class="content"><div class="name">Café turc ou café au choix, s7ayen 7louw 3arbi (4 pièces)</div><div class="desc"></div></div><div class="price">10dt</div></div>
+                <div class="card"><img src="images/fondue au chocolat.png" alt="fondue"><div class="content"><div class="name">Fondue au chocolat</div><div class="desc"></div></div><div class="price">10dt</div></div>
+            </div>
+        </section>
+
+        <section class="menu-section" data-category="chicha">
+            <h2>Chicha</h2>
+            <div class="cards">
+                <div class="card"><img src="images/chicha.png" alt="Chicha"><div class="content"><div class="name">Chicha 93ayda 3sal</div><div class="desc"></div></div><div class="price">10dt</div></div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                const category = button.getAttribute('data-category');
+                
+                // Show/hide relevant sections
+                document.querySelectorAll('.menu-section').forEach(section => {
+                    if (category === 'all' || section.getAttribute('data-category') === category) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+
+                // Ensure clicked button is visible
+                button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            });
+        });
+
+        // Horizontal scrolling with buttons
+        const container = document.querySelector('.filter-container');
+        const leftBtn = document.querySelector('.scroll-btn.left');
+        const rightBtn = document.querySelector('.scroll-btn.right');
+        const scrollAmount = 200;
+
+        leftBtn.addEventListener('click', () => {
+            container.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
+            });
+        });
+
+        rightBtn.addEventListener('click', () => {
+            container.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+        });
+
+        // Hide/show scroll buttons based on scroll position
+        const updateScrollButtons = () => {
+            leftBtn.style.display = container.scrollLeft > 0 ? 'flex' : 'none';
+            rightBtn.style.display = 
+                container.scrollLeft < (container.scrollWidth - container.clientWidth) ? 'flex' : 'none';
+        };
+
+        container.addEventListener('scroll', updateScrollButtons);
+        window.addEventListener('resize', updateScrollButtons);
+        // Initial check
+        updateScrollButtons();
+
+        // Keep product card min width in sync with the widest category button
+        function updateFilterBtnWidth() {
+            const buttons = document.querySelectorAll('.filter-btn');
+            let max = 0;
+            buttons.forEach(b => {
+                const rect = b.getBoundingClientRect();
+                // include horizontal padding/border in width
+                if (rect.width > max) max = rect.width;
+            });
+            // sensible minimum
+            if (max < 220) max = 220;
+            // cap to the main container width so cards don't become wider than their section
+            const mainContainer = document.querySelector('.container');
+            if (mainContainer) {
+                const containerWidth = mainContainer.clientWidth;
+                // leave some room for grid gaps; subtract 32px as a safe margin
+                const cap = Math.max(220, containerWidth - 32);
+                if (max > cap) max = cap;
+            }
+            document.documentElement.style.setProperty('--filter-btn-width', Math.ceil(max) + 'px');
+        }
+
+        // Run on load and when window resizes
+        updateFilterBtnWidth();
+        window.addEventListener('resize', () => {
+            // small debounce
+            clearTimeout(window._filterBtnWidthTimer);
+            window._filterBtnWidthTimer = setTimeout(updateFilterBtnWidth, 120);
+        });
+
+        // If filter buttons change (e.g., text updated), observe mutations
+        const fc = document.querySelector('.filter-container');
+        if (fc && window.MutationObserver) {
+            const mo = new MutationObserver(() => updateFilterBtnWidth());
+            mo.observe(fc, { childList: true, subtree: true, characterData: true });
+        }
+
+        // Move existing .price elements into a new .meta row under the product name
+        function migratePriceIntoMeta() {
+            document.querySelectorAll('.card').forEach(card => {
+                const content = card.querySelector('.content');
+                const price = card.querySelector('.price');
+                if (!content || !price) return;
+
+                // Create meta container
+                const meta = document.createElement('div');
+                meta.className = 'meta';
+
+                const label = document.createElement('span');
+                label.className = 'prix-label';
+                label.textContent = 'Prix';
+
+                // Normalize price text to include a space before currency/unit (e.g., '2dt' -> '2 dt')
+                price.textContent = price.textContent.trim().replace(/^(\d+(?:\.\d+)?)(\s?)([a-zA-Z]+)/, '$1 $3');
+
+                meta.appendChild(label);
+                meta.appendChild(price);
+
+                // Insert meta after the name element (if exists), otherwise at top of content
+                const nameEl = content.querySelector('.name');
+                if (nameEl && nameEl.nextSibling) {
+                    content.insertBefore(meta, nameEl.nextSibling);
+                } else if (nameEl) {
+                    content.appendChild(meta);
+                } else {
+                    content.insertBefore(meta, content.firstChild);
+                }
+            });
+        }
+
+        // Run migration now and whenever filter buttons change (in case cards are re-rendered)
+        migratePriceIntoMeta();
+        if (fc && window.MutationObserver) {
+            const mo2 = new MutationObserver(() => migratePriceIntoMeta());
+            mo2.observe(document.querySelector('.container'), { childList: true, subtree: true, characterData: true });
+        }
+    </script>
+</body>
+</html>
